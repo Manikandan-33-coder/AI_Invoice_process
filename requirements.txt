@@ -1,7 +1,6 @@
 streamlit
-torch>=2.9.0
-transformers
-pillow
 pdf2image
 pytesseract
-pdfplumber
+pillow
+transformers
+torch
