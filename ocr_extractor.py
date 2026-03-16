@@ -1,12 +1,20 @@
 import re
+import os
 from pdf2image import convert_from_path
 import pytesseract
 from PIL import Image
 
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+# Cross platform Tesseract path
+if os.name == "nt":
+    pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+else:
+    pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
+
 
 def extract_invoice_data_ocr(file_path):
+
     text = ""
+
     images = convert_from_path(file_path, dpi=300) if file_path.lower().endswith(".pdf") else [Image.open(file_path)]
 
     for img in images:
@@ -24,14 +32,16 @@ def extract_invoice_data_ocr(file_path):
     data = {
         "invoice_number": invoice_number.group(1) if invoice_number else "Not Found",
         "date": date.group(1) if date else "Not Found",
-        "total": total[-1].replace(",","") if total else "Not Found",
+        "total": total[-1].replace(",", "") if total else "Not Found",
         "vendor_name": vendor_name.group(1).strip() if vendor_name else "Not Found",
         "bill_to": bill_to.group(1).strip() if bill_to else "Not Found",
         "ship_to": ship_to.group(1).strip() if ship_to else "Not Found",
-        "subtotal": subtotal.group(1).replace(",","") if subtotal else "Not Found",
-        "tax": tax.group(1).replace(",","") if tax else "Not Found"
+        "subtotal": subtotal.group(1).replace(",", "") if subtotal else "Not Found",
+        "tax": tax.group(1).replace(",", "") if tax else "Not Found"
     }
 
-    confidence = {k: 100 if v!="Not Found" else 0 for k,v in data.items()}
+    confidence = {k: 100 if v != "Not Found" else 0 for k, v in data.items()}
+
     data["confidence"] = confidence
+
     return data
