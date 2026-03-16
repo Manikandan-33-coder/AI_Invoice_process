@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Invoice Processor</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<h2>Upload Invoice</h2>
+<input type="file" id="file" />
+<button onclick="uploadInvoice()">Process Invoice</button>
+
+<hr>
+
+<h3>Extracted Data</h3>
+<table id="result_table" border="1" cellpadding="8" cellspacing="0">
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+<th>Confidence (%)</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+
+<h3>Save Data</h3>
+Invoice Number: <input id="invoice_number" /><br>
+Date: <input id="date" /><br>
+Total: <input id="total" /><br>
+<button onclick="saveData()">Save Invoice</button>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
