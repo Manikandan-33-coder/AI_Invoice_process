@@ -1,13 +1,18 @@
-# ml_model/layoutlm_extractor.py
-
 from transformers import LayoutLMv3Processor, LayoutLMv3ForTokenClassification
 from PIL import Image
 import torch
 import pdf2image
 
 # Load processor and model
-processor = LayoutLMv3Processor.from_pretrained("microsoft/layoutlmv3-base", apply_ocr=True)
-model = LayoutLMv3ForTokenClassification.from_pretrained("microsoft/layoutlmv3-base", num_labels=9)
+processor = LayoutLMv3Processor.from_pretrained(
+    "microsoft/layoutlmv3-base",
+    apply_ocr=True
+)
+
+model = LayoutLMv3ForTokenClassification.from_pretrained(
+    "microsoft/layoutlmv3-base",
+    num_labels=9
+)
 
 # Force CPU (Streamlit cloud has no GPU)
 device = torch.device("cpu")
@@ -28,10 +33,13 @@ FIELD_LABELS = {
 
 
 def ml_extract_fields(file_path):
+    """
+    Extract invoice fields from PDF or image using LayoutLMv3
+    """
 
     images = []
 
-    # Convert PDF to images
+    # Convert PDF → images
     if file_path.lower().endswith(".pdf"):
         images = pdf2image.convert_from_path(file_path, dpi=300)
     else:
@@ -44,8 +52,10 @@ def ml_extract_fields(file_path):
 
         encoding = processor(img, return_tensors="pt")
 
+        # Move tensors to CPU
         encoding = {k: v.to(device) for k, v in encoding.items()}
 
+        # Model inference
         with torch.no_grad():
             outputs = model(**encoding)
 
@@ -65,7 +75,8 @@ def ml_extract_fields(file_path):
             if field != "O":
 
                 token_text = processor.tokenizer.decode(
-                    [input_ids[idx]], skip_special_tokens=True
+                    [input_ids[idx]],
+                    skip_special_tokens=True
                 ).strip()
 
                 if token_text == "":
@@ -74,7 +85,8 @@ def ml_extract_fields(file_path):
                 if field in extracted_fields:
                     extracted_fields[field] += " " + token_text
                     confidence_scores[field] = max(
-                        confidence_scores[field], max_probs[idx].item()
+                        confidence_scores[field],
+                        max_probs[idx].item()
                     )
                 else:
                     extracted_fields[field] = token_text
@@ -87,7 +99,7 @@ def ml_extract_fields(file_path):
             extracted_fields[field] = "Not Found"
             confidence_scores[field] = 0.0
 
-    # Convert confidence to %
+    # Convert confidence → percentage
     for key in confidence_scores:
         confidence_scores[key] = round(confidence_scores[key] * 100, 2)
 
