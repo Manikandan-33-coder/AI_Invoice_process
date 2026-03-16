@@ -1,6 +1,6 @@
-streamlit==1.29.0
-torch==2.1.0
-transformers==4.36.2
+streamlit
+torch>=2.9.0
+transformers
 pillow
 pdf2image
 pytesseract
